@@ -1,0 +1,336 @@
+📚 Week 18 - Day 3
+Minimum Number of Coins to Reach Target (Coin Change)
+
+This is one of the most important DP problems because it introduces:
+
+Infinite supply of coins
+Taking minimum among multiple choices
+Invalid states
+DP with unbounded choices
+
+This problem is often the first Unbounded DP problem.
+
+# Week 18 - Day 3
+# Minimum Number of Coins (Coin Change)
+
+LeetCode: 322
+
+---
+
+## Problem Statement
+
+Given an array of coins and a target amount.
+
+You have an infinite supply of each coin.
+
+Return the minimum number of coins needed to make the target.
+
+If it is impossible, return -1.
+
+---
+
+## Example
+
+Input:
+
+coins = [1,2,5]
+
+amount = 11
+
+Output:
+
+3
+
+Explanation:
+
+11 = 5 + 5 + 1
+
+Minimum coins = 3
+
+---
+
+# Key Observation
+
+At every state:
+
+1. Take the current coin.
+2. Reduce the target.
+3. Add 1 coin.
+
+Recurrence:
+
+f(target) = 1 + min(
+                f(target - coin)
+            )
+
+---
+
+# Base Cases
+
+target == 0
+
+Answer = 0
+
+target < 0
+
+Impossible.
+
+Return infinity.
+
+---
+
+# DP State
+
+dp[target]
+
+Minimum coins needed to make target.
+
+---
+
+# Why DP?
+
+Example:
+
+coins = [1,2,5]
+
+To calculate:
+
+f(11)
+
+You repeatedly calculate:
+
+f(6)
+f(5)
+f(4)
+
+These overlapping subproblems make DP useful.
+
+---
+
+# Approaches
+
+1. Recursion
+2. Memoization
+3. Tabulation
+4. Space Optimization
+
+---
+
+# Recurrence Relation
+
+f(target) = min(
+    1 + f(target - coin)
+)
+
+Answer:
+
+f(amount)
+
+---
+
+# Time Complexity
+
+Recursion:
+O(N^amount)
+
+Memoization:
+O(N × amount)
+
+Tabulation:
+O(N × amount)
+
+Space Optimization:
+O(amount)
+
+Where:
+N = number of coins.
+
+---
+
+# DP Pattern Learned
+
+- Infinite choices.
+- Minimize answer.
+- Invalid states.
+- Unbounded DP.
+
+---
+
+# Similar Problems
+
+- Coin Change II
+- Rod Cutting
+- Unbounded Knapsack
+- Minimum Perfect Squares
+- Minimum Cost Problems
+
+
+  01_recursion.cpp
+#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+
+int solve(vector<int>& coins, int target) {
+    if (target == 0)
+        return 0;
+
+    if (target < 0)
+        return INT_MAX;
+
+    int mini = INT_MAX;
+
+    for (int coin : coins) {
+        int ans = solve(coins, target - coin);
+
+        if (ans != INT_MAX)
+            mini = min(mini, 1 + ans);
+    }
+
+    return mini;
+}
+
+int coinChange(vector<int>& coins, int amount) {
+    int ans = solve(coins, amount);
+
+    return ans == INT_MAX ? -1 : ans;
+}
+
+int main() {
+    vector<int> coins = {1,2,5};
+    int amount = 11;
+
+    cout << coinChange(coins, amount);
+}
+02_memoization.cpp
+#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+
+int solve(vector<int>& coins, int target, vector<int>& dp) {
+    if (target == 0)
+        return 0;
+
+    if (target < 0)
+        return INT_MAX;
+
+    if (dp[target] != -1)
+        return dp[target];
+
+    int mini = INT_MAX;
+
+    for (int coin : coins) {
+        int ans = solve(coins, target - coin, dp);
+
+        if (ans != INT_MAX)
+            mini = min(mini, 1 + ans);
+    }
+
+    return dp[target] = mini;
+}
+
+int coinChange(vector<int>& coins, int amount) {
+    vector<int> dp(amount + 1, -1);
+
+    int ans = solve(coins, amount, dp);
+
+    return ans == INT_MAX ? -1 : ans;
+}
+
+int main() {
+    vector<int> coins = {1,2,5};
+    int amount = 11;
+
+    cout << coinChange(coins, amount);
+}
+03_tabulation.cpp
+#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+
+int coinChange(vector<int>& coins, int amount) {
+    vector<int> dp(amount + 1, INT_MAX);
+
+    dp[0] = 0;
+
+    for (int target = 1; target <= amount; target++) {
+
+        for (int coin : coins) {
+
+            if (target - coin >= 0 &&
+                dp[target - coin] != INT_MAX) {
+
+                dp[target] = min(
+                    dp[target],
+                    1 + dp[target - coin]
+                );
+            }
+        }
+    }
+
+    return dp[amount] == INT_MAX ? -1 : dp[amount];
+}
+
+int main() {
+    vector<int> coins = {1,2,5};
+    int amount = 11;
+
+    cout << coinChange(coins, amount);
+}
+04_space_optimization.cpp
+#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+
+int coinChange(vector<int>& coins, int amount) {
+
+    vector<int> dp(amount + 1, INT_MAX);
+
+    dp[0] = 0;
+
+    for (int target = 1; target <= amount; target++) {
+
+        for (int coin : coins) {
+
+            if (target >= coin &&
+                dp[target - coin] != INT_MAX) {
+
+                dp[target] = min(
+                    dp[target],
+                    1 + dp[target - coin]
+                );
+            }
+        }
+    }
+
+    return dp[amount] == INT_MAX ? -1 : dp[amount];
+}
+
+int main() {
+    vector<int> coins = {1,2,5};
+    int amount = 11;
+
+    cout << coinChange(coins, amount);
+}
+
+Note: Since the tabulation solution already uses only a 1D array, it is itself the space-optimized version.
+
+complexity_analysis.txt
+Recursion:
+Time  : Exponential
+Space : O(amount)
+
+Memoization:
+Time  : O(N × amount)
+Space : O(amount)
+
+Tabulation:
+Time  : O(N × amount)
+Space : O(amount)
+
+Space Optimization:
+Time  : O(N × amount)
+Space : O(amount)
