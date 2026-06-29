@@ -1,0 +1,271 @@
+📚 Week 18 – Day 5
+Cut Rod Into X, Y, Z Segments
+
+This problem introduces another important DP pattern:
+
+Take a cut
+Reduce the remaining length
+Maximize the number of segments
+
+Unlike Coin Change where we minimize the answer, here we maximize the number of cuts.
+
+
+## Problem Statement
+
+Given a rod of length n.
+
+You can cut the rod into segments of lengths:
+
+- x
+- y
+- z
+
+Find the maximum number of segments that can be obtained.
+
+If it is impossible, return 0.
+
+---
+
+## Example
+
+Input:
+
+n = 7
+
+x = 5
+y = 2
+z = 2
+
+Output:
+
+2
+
+Explanation:
+
+7 = 5 + 2
+
+Maximum cuts = 2
+
+---
+
+# Observation
+
+At every step we have three choices:
+
+1. Cut x
+2. Cut y
+3. Cut z
+
+We want:
+
+Maximum cuts.
+
+---
+
+# Recurrence Relation
+
+f(n) = 1 + max(
+            f(n-x),
+            f(n-y),
+            f(n-z)
+        )
+
+---
+
+# Base Cases
+
+n == 0
+
+return 0
+
+n < 0
+
+return -∞
+
+---
+
+# DP State
+
+dp[n]
+
+Maximum segments possible for length n.
+
+---
+
+# Example
+
+n = 7
+
+Cuts:
+
+7-5 = 2
+
+7-2 = 5
+
+Maximum valid answer = 2
+
+---
+
+# Time Complexity
+
+Recursion:
+O(3^N)
+
+Memoization:
+O(N)
+
+Tabulation:
+O(N)
+
+---
+
+# DP Pattern
+
+Take one choice.
+
+Reduce the target.
+
+Add one cut.
+
+Take maximum.
+
+---
+
+# Similar Problems
+
+- Coin Change
+- Rod Cutting
+- Unbounded Knapsack
+- Integer Break
+01_recursion.cpp
+#include <iostream>
+#include <climits>
+using namespace std;
+
+int solve(int n, int x, int y, int z) {
+
+    if(n == 0)
+        return 0;
+
+    if(n < 0)
+        return INT_MIN;
+
+    int a = solve(n-x, x, y, z) + 1;
+    int b = solve(n-y, x, y, z) + 1;
+    int c = solve(n-z, x, y, z) + 1;
+
+    return max(a, max(b, c));
+}
+
+int cutSegments(int n, int x, int y, int z) {
+
+    int ans = solve(n, x, y, z);
+
+    return ans < 0 ? 0 : ans;
+}
+
+int main() {
+
+    int n = 7;
+    int x = 5;
+    int y = 2;
+    int z = 2;
+
+    cout << cutSegments(n, x, y, z);
+
+    return 0;
+}
+02_memoization.cpp
+#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+
+int solve(int n, int x, int y, int z,
+          vector<int>& dp) {
+
+    if(n == 0)
+        return 0;
+
+    if(n < 0)
+        return INT_MIN;
+
+    if(dp[n] != -1)
+        return dp[n];
+
+    int a = solve(n-x, x, y, z, dp) + 1;
+    int b = solve(n-y, x, y, z, dp) + 1;
+    int c = solve(n-z, x, y, z, dp) + 1;
+
+    return dp[n] = max(a, max(b, c));
+}
+
+int cutSegments(int n, int x, int y, int z) {
+
+    vector<int> dp(n + 1, -1);
+
+    int ans = solve(n, x, y, z, dp);
+
+    return ans < 0 ? 0 : ans;
+}
+
+int main() {
+
+    int n = 7;
+    int x = 5;
+    int y = 2;
+    int z = 2;
+
+    cout << cutSegments(n, x, y, z);
+
+    return 0;
+}
+03_tabulation.cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int cutSegments(int n, int x, int y, int z) {
+
+    vector<int> dp(n + 1, -1);
+
+    dp[0] = 0;
+
+    for(int i = 1; i <= n; i++) {
+
+        if(i - x >= 0 && dp[i-x] != -1)
+            dp[i] = max(dp[i], dp[i-x] + 1);
+
+        if(i - y >= 0 && dp[i-y] != -1)
+            dp[i] = max(dp[i], dp[i-y] + 1);
+
+        if(i - z >= 0 && dp[i-z] != -1)
+            dp[i] = max(dp[i], dp[i-z] + 1);
+    }
+
+    return max(0, dp[n]);
+}
+
+int main() {
+
+    int n = 7;
+    int x = 5;
+    int y = 2;
+    int z = 2;
+
+    cout << cutSegments(n, x, y, z);
+
+    return 0;
+}
+complexity_analysis.txt
+Recursion:
+Time  : O(3^N)
+Space : O(N)
+
+Memoization:
+Time  : O(N)
+Space : O(N)
+
+Tabulation:
+Time  : O(N)
+Space : O(N)
