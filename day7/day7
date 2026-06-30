@@ -1,0 +1,451 @@
+# Week 18 - Day 7
+# 0/1 Knapsack Problem (2D Dynamic Programming)
+
+---
+
+## Problem Statement
+
+You are given:
+
+- An array of weights.
+- An array of values.
+- A knapsack with capacity W.
+
+Each item can be selected **at most once**.
+
+Find the maximum value that can be obtained without exceeding the knapsack capacity.
+
+---
+
+## Example
+
+Input
+
+Weight = [1,2,4,5]
+
+Value  = [5,4,8,6]
+
+Capacity = 5
+
+Output
+
+13
+
+Explanation
+
+Choose:
+
+Weight 1 → Value 5
+
+Weight 4 → Value 8
+
+Total Weight = 5
+
+Total Value = 13
+
+---
+
+# Why is it called 0/1 Knapsack?
+
+For every item we have only two choices:
+
+0 → Don't pick it
+
+1 → Pick it
+
+Nothing in between.
+
+---
+
+# DP Observation
+
+At every item:
+
+Either
+
+Take it
+
+or
+
+Skip it
+
+This becomes the famous Take / Not Take DP.
+
+---
+
+# State Definition
+
+dp[index][capacity]
+
+Meaning:
+
+Maximum value obtainable using items from 0...index
+with remaining capacity.
+
+---
+
+# Recurrence Relation
+
+Not Take
+
+solve(index-1, capacity)
+
+Take
+
+value[index] +
+
+solve(index-1,
+capacity-weight[index])
+
+Answer
+
+max(Take, Not Take)
+
+---
+
+# Base Case
+
+At index = 0
+
+If weight[0] <= capacity
+
+return value[0]
+
+Else
+
+return 0
+
+---
+
+# Why 2D DP?
+
+State depends on
+
+1. Current Item
+2. Remaining Capacity
+
+Hence two changing variables
+
+↓
+
+2D DP
+
+---
+
+# Approaches
+
+1. Recursion
+2. Memoization
+3. Tabulation
+4. Space Optimization (Two Rows)
+5. Space Optimization (Single Row)
+
+---
+
+# Time Complexity
+
+Recursion
+
+O(2^N)
+
+Memoization
+
+O(N × W)
+
+Tabulation
+
+O(N × W)
+
+Space Optimized
+
+O(N × W)
+
+---
+
+# Space Complexity
+
+Recursion
+
+O(N)
+
+Memoization
+
+O(N × W)
+
+Tabulation
+
+O(N × W)
+
+Two Rows
+
+O(2 × W)
+
+One Row
+
+O(W)
+
+---
+
+# DP Pattern
+
+Take
+
+value[i] + dp[i-1][w-weight[i]]
+
+Not Take
+
+dp[i-1][w]
+
+Answer
+
+max(Take, Not Take)
+
+---
+
+# Similar Problems
+
+- Subset Sum
+- Partition Equal Subset Sum
+- Target Sum
+- Count Subsets
+- Last Stone Weight II
+- Minimum Subset Difference
+01_recursion.cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int solve(vector<int>& weight, vector<int>& value,
+          int index, int capacity) {
+
+    if(index == 0) {
+        if(weight[0] <= capacity)
+            return value[0];
+        return 0;
+    }
+
+    int notTake = solve(weight, value,
+                        index-1, capacity);
+
+    int take = 0;
+
+    if(weight[index] <= capacity)
+        take = value[index] +
+               solve(weight, value,
+                     index-1,
+                     capacity-weight[index]);
+
+    return max(take, notTake);
+}
+
+int main() {
+
+    vector<int> weight = {1,2,4,5};
+    vector<int> value = {5,4,8,6};
+
+    int capacity = 5;
+
+    cout << solve(weight, value,
+                  weight.size()-1,
+                  capacity);
+}
+02_memoization.cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int solve(vector<int>& weight,
+          vector<int>& value,
+          int index,
+          int capacity,
+          vector<vector<int>>& dp) {
+
+    if(index == 0) {
+        if(weight[0] <= capacity)
+            return value[0];
+        return 0;
+    }
+
+    if(dp[index][capacity] != -1)
+        return dp[index][capacity];
+
+    int notTake =
+        solve(weight,value,index-1,
+              capacity,dp);
+
+    int take = 0;
+
+    if(weight[index] <= capacity)
+        take =
+        value[index] +
+        solve(weight,value,index-1,
+              capacity-weight[index],dp);
+
+    return dp[index][capacity] =
+           max(take, notTake);
+}
+
+int main() {
+
+    vector<int> weight={1,2,4,5};
+    vector<int> value={5,4,8,6};
+
+    int W=5;
+
+    vector<vector<int>> dp(
+        weight.size(),
+        vector<int>(W+1,-1));
+
+    cout<<solve(weight,value,
+                weight.size()-1,
+                W,dp);
+}
+03_tabulation.cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+
+    vector<int> wt={1,2,4,5};
+    vector<int> val={5,4,8,6};
+
+    int W=5;
+    int n=wt.size();
+
+    vector<vector<int>> dp(
+        n,
+        vector<int>(W+1,0));
+
+    for(int w=wt[0];w<=W;w++)
+        dp[0][w]=val[0];
+
+    for(int i=1;i<n;i++){
+
+        for(int w=0;w<=W;w++){
+
+            int notTake=dp[i-1][w];
+
+            int take=0;
+
+            if(wt[i]<=w)
+                take=val[i]+
+                dp[i-1][w-wt[i]];
+
+            dp[i][w]=max(take,notTake);
+        }
+    }
+
+    cout<<dp[n-1][W];
+}
+04_space_optimization_2rows.cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+
+    vector<int> wt={1,2,4,5};
+    vector<int> val={5,4,8,6};
+
+    int W=5;
+
+    vector<int> prev(W+1,0);
+    vector<int> curr(W+1,0);
+
+    for(int w=wt[0];w<=W;w++)
+        prev[w]=val[0];
+
+    for(int i=1;i<wt.size();i++){
+
+        for(int w=0;w<=W;w++){
+
+            int notTake=prev[w];
+
+            int take=0;
+
+            if(wt[i]<=w)
+                take=val[i]+
+                curr[w-wt[i]];
+
+            curr[w]=max(take,notTake);
+        }
+
+        prev=curr;
+    }
+
+    cout<<prev[W];
+}
+05_space_optimization_1row.cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+
+    vector<int> wt={1,2,4,5};
+    vector<int> val={5,4,8,6};
+
+    int W=5;
+
+    vector<int> dp(W+1,0);
+
+    for(int w=wt[0];w<=W;w++)
+        dp[w]=val[0];
+
+    for(int i=1;i<wt.size();i++){
+
+        for(int w=W;w>=0;w--){
+
+            int notTake=dp[w];
+
+            int take=0;
+
+            if(wt[i]<=w)
+                take=val[i]+
+                dp[w-wt[i]];
+
+            dp[w]=max(take,notTake);
+        }
+    }
+
+    cout<<dp[W];
+}
+complexity_analysis.txt
+Recursion
+
+Time : O(2^N)
+
+Space : O(N)
+
+-----------------------
+
+Memoization
+
+Time : O(N × W)
+
+Space : O(N × W)
+
+-----------------------
+
+Tabulation
+
+Time : O(N × W)
+
+Space : O(N × W)
+
+-----------------------
+
+2 Rows
+
+Time : O(N × W)
+
+Space : O(W)
+
+-----------------------
+
+1 Row
+
+Time : O(N × W)
+
+Space : O(W)
