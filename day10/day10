@@ -1,0 +1,318 @@
+# Day 10 - Minimum Cost For Tickets
+
+## Problem Statement
+
+You are given:
+
+- An array `days`, where `days[i]` is the day you will travel.
+- An array `costs` where:
+  - `costs[0]` = cost of a **1-day pass**
+  - `costs[1]` = cost of a **7-day pass**
+  - `costs[2]` = cost of a **30-day pass**
+
+Return the **minimum cost** required to travel on all the given days.
+
+### Example
+
+**Input**
+
+```
+days = [1,4,6,7,8,20]
+costs = [2,7,15]
+```
+
+**Output**
+
+```
+11
+```
+
+**Explanation**
+
+Buy:
+
+- 1-day pass on day 1
+- 7-day pass on day 4
+- 1-day pass on day 20
+
+Total Cost = 2 + 7 + 2 = 11
+
+---
+
+# Approach 1 : Pure Recursion
+
+## Idea
+
+At every travel day, we have **three choices**:
+
+- Buy a 1-day pass
+- Buy a 7-day pass
+- Buy a 30-day pass
+
+Recursively compute the minimum cost after covering the valid travel days for each pass.
+
+Return the minimum among all three choices.
+
+---
+
+### Time Complexity
+
+```
+Exponential
+```
+
+---
+
+### Space Complexity
+
+```
+O(N)
+```
+
+(Recursion stack)
+
+---
+
+# Approach 2 : Top-Down DP (Memoization)
+
+## Idea
+
+The same travel-day index is solved multiple times.
+
+Store the answer for every index.
+
+If already computed, return it directly.
+
+### DP State
+
+```
+dp[index]
+```
+
+= Minimum cost required to cover travel days from `index` to the end.
+
+---
+
+### Time Complexity
+
+```
+O(N)
+```
+
+---
+
+### Space Complexity
+
+```
+O(N)
+```
+
+---
+
+# Approach 3 : Bottom-Up DP (Tabulation)
+
+## Idea
+
+Compute answers from the last travel day towards the first.
+
+For every index:
+
+- Cost using 1-day pass
+- Cost using 7-day pass
+- Cost using 30-day pass
+
+Store the minimum.
+
+Finally,
+
+```
+dp[0]
+```
+
+contains the answer.
+
+---
+
+### Time Complexity
+
+```
+O(N)
+```
+
+---
+
+### Space Complexity
+
+```
+O(N)
+```
+
+---
+
+# DP Transition
+
+```
+dp[i] = min(
+    cost1 + dp[next1],
+    cost7 + dp[next7],
+    cost30 + dp[next30]
+)
+```
+
+where:
+
+- `next1` = first uncovered travel day after 1-day pass
+- `next7` = first uncovered travel day after 7-day pass
+- `next30` = first uncovered travel day after 30-day pass
+
+---
+
+# Learning Outcomes
+
+- Index-based Dynamic Programming
+- Multiple-choice state transitions
+- Memoization
+- Bottom-Up DP
+- Travel scheduling optimization
+- Variable-length state jumps
+
+---
+
+# Concepts Covered
+
+- Dynamic Programming
+- Recursion
+- Memoization
+- Tabulation
+- Optimization Problems
+- 1D DP
+
+---
+
+## Time & Space Complexity
+
+| Approach | Time Complexity | Space Complexity |
+|----------|-----------------|------------------|
+| Recursion | Exponential | `O(N)` |
+| Memoization | `O(N)` | `O(N)` |
+| Tabulation | `O(N)` | `O(N)` |
+
+---
+
+⭐ Part of my **Weekly DSA Series**.
+💻 minimum_cost_for_tickets.cpp
+#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+
+//-----------------------------------------------------
+// Approach 1 : Pure Recursion
+//-----------------------------------------------------
+
+int solveRec(vector<int>& days, vector<int>& costs, int index) {
+
+    if (index >= days.size())
+        return 0;
+
+    // 1-Day Pass
+    int option1 = costs[0] + solveRec(days, costs, index + 1);
+
+    // 7-Day Pass
+    int i = index;
+    while (i < days.size() && days[i] < days[index] + 7)
+        i++;
+
+    int option2 = costs[1] + solveRec(days, costs, i);
+
+    // 30-Day Pass
+    i = index;
+    while (i < days.size() && days[i] < days[index] + 30)
+        i++;
+
+    int option3 = costs[2] + solveRec(days, costs, i);
+
+    return min(option1, min(option2, option3));
+}
+
+//-----------------------------------------------------
+// Approach 2 : Memoization
+//-----------------------------------------------------
+
+int solveMem(vector<int>& days, vector<int>& costs, int index, vector<int>& dp) {
+
+    if (index >= days.size())
+        return 0;
+
+    if (dp[index] != -1)
+        return dp[index];
+
+    int option1 = costs[0] + solveMem(days, costs, index + 1, dp);
+
+    int i = index;
+    while (i < days.size() && days[i] < days[index] + 7)
+        i++;
+
+    int option2 = costs[1] + solveMem(days, costs, i, dp);
+
+    i = index;
+    while (i < days.size() && days[i] < days[index] + 30)
+        i++;
+
+    int option3 = costs[2] + solveMem(days, costs, i, dp);
+
+    return dp[index] = min(option1, min(option2, option3));
+}
+
+//-----------------------------------------------------
+// Approach 3 : Tabulation
+//-----------------------------------------------------
+
+int solveTab(vector<int>& days, vector<int>& costs) {
+
+    int n = days.size();
+
+    vector<int> dp(n + 1, 0);
+
+    for (int index = n - 1; index >= 0; index--) {
+
+        int option1 = costs[0] + dp[index + 1];
+
+        int i = index;
+        while (i < n && days[i] < days[index] + 7)
+            i++;
+
+        int option2 = costs[1] + dp[i];
+
+        i = index;
+        while (i < n && days[i] < days[index] + 30)
+            i++;
+
+        int option3 = costs[2] + dp[i];
+
+        dp[index] = min(option1, min(option2, option3));
+    }
+
+    return dp[0];
+}
+
+//-----------------------------------------------------
+
+int main() {
+
+    vector<int> days = {1,4,6,7,8,20};
+    vector<int> costs = {2,7,15};
+
+    cout << "Recursion : "
+         << solveRec(days, costs, 0) << endl;
+
+    vector<int> dp(days.size(), -1);
+
+    cout << "Memoization : "
+         << solveMem(days, costs, 0, dp) << endl;
+
+    cout << "Tabulation : "
+         << solveTab(days, costs) << endl;
+
+    return 0;
+}
