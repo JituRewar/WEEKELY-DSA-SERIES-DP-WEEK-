@@ -1,0 +1,393 @@
+# Day 11 - Maximal Square
+
+## Problem Statement
+
+Given an `m × n` binary matrix filled with `'0'`s and `'1'`s, find the **largest square containing only 1's** and return its **area**.
+
+### Example
+
+**Input**
+
+```
+matrix =
+[
+ ["1","0","1","0","0"],
+ ["1","0","1","1","1"],
+ ["1","1","1","1","1"],
+ ["1","0","0","1","0"]
+]
+```
+
+**Output**
+
+```
+4
+```
+
+**Explanation**
+
+The largest square consists of only 1's with side length = 2.
+
+Area = 2 × 2 = 4.
+
+---
+
+# Approach 1 : Pure Recursion
+
+## Idea
+
+For every cell:
+
+- Compute the largest square starting from that cell.
+- Explore:
+  - Right
+  - Down
+  - Diagonal
+- If current cell is `1`
+
+```
+Current Side =
+1 + min(right, down, diagonal)
+```
+
+Keep track of the maximum side length.
+
+---
+
+### Time Complexity
+
+```
+Exponential
+```
+
+Approximately
+
+```
+O(3^(M×N))
+```
+
+---
+
+### Space Complexity
+
+```
+O(M + N)
+```
+
+(Recursion stack)
+
+---
+
+# Approach 2 : Top-Down DP (Memoization)
+
+## Idea
+
+Many cells are solved repeatedly.
+
+Store the answer for every cell.
+
+```
+dp[row][col]
+```
+
+= Largest square whose top-left corner starts at `(row, col)`.
+
+---
+
+### Time Complexity
+
+```
+O(M × N)
+```
+
+---
+
+### Space Complexity
+
+```
+O(M × N)
+```
+
+---
+
+# Approach 3 : Bottom-Up DP (Tabulation)
+
+## Idea
+
+Start from the bottom-right corner.
+
+If current cell is `1`:
+
+```
+dp[i][j] =
+1 + min(
+    dp[i][j+1],
+    dp[i+1][j],
+    dp[i+1][j+1]
+)
+```
+
+Otherwise,
+
+```
+dp[i][j] = 0
+```
+
+Track the maximum side length.
+
+Return
+
+```
+maxSide × maxSide
+```
+
+---
+
+### Time Complexity
+
+```
+O(M × N)
+```
+
+---
+
+### Space Complexity
+
+```
+O(M × N)
+```
+
+---
+
+# Approach 4 : Space Optimized DP
+
+## Idea
+
+The current row only depends on:
+
+- Current row
+- Next row
+
+Use two 1D arrays instead of a full 2D DP table.
+
+---
+
+### Time Complexity
+
+```
+O(M × N)
+```
+
+---
+
+### Space Complexity
+
+```
+O(N)
+```
+
+---
+
+# DP Transition
+
+```
+if(matrix[i][j] == '1')
+
+dp[i][j] =
+1 + min(
+    dp[i][j+1],
+    dp[i+1][j],
+    dp[i+1][j+1]
+)
+
+else
+
+dp[i][j] = 0
+```
+
+---
+
+# Learning Outcomes
+
+- 2D Dynamic Programming
+- Matrix DP
+- State Transition
+- Memoization
+- Tabulation
+- Space Optimization
+
+---
+
+# Concepts Covered
+
+- Dynamic Programming
+- Matrix DP
+- 2D DP
+- Memoization
+- Tabulation
+- Space Optimization
+
+---
+
+## Time & Space Complexity
+
+| Approach | Time Complexity | Space Complexity |
+|----------|-----------------|------------------|
+| Recursion | Exponential | `O(M + N)` |
+| Memoization | `O(M × N)` | `O(M × N)` |
+| Tabulation | `O(M × N)` | `O(M × N)` |
+| Space Optimized | `O(M × N)` | `O(N)` |
+
+---
+
+⭐ Part of my **Weekly DSA Series**.
+💻 maximal_square.cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+//------------------------------------------------------
+// Approach 1 : Pure Recursion
+//------------------------------------------------------
+
+int solveRec(vector<vector<char>>& mat, int i, int j, int& maxi) {
+
+    if (i >= mat.size() || j >= mat[0].size())
+        return 0;
+
+    int right = solveRec(mat, i, j + 1, maxi);
+    int diagonal = solveRec(mat, i + 1, j + 1, maxi);
+    int down = solveRec(mat, i + 1, j, maxi);
+
+    if (mat[i][j] == '1') {
+        int ans = 1 + min(right, min(diagonal, down));
+        maxi = max(maxi, ans);
+        return ans;
+    }
+
+    return 0;
+}
+
+//------------------------------------------------------
+// Approach 2 : Memoization
+//------------------------------------------------------
+
+int solveMem(vector<vector<char>>& mat, int i, int j,
+             vector<vector<int>>& dp, int& maxi) {
+
+    if (i >= mat.size() || j >= mat[0].size())
+        return 0;
+
+    if (dp[i][j] != -1)
+        return dp[i][j];
+
+    int right = solveMem(mat, i, j + 1, dp, maxi);
+    int diagonal = solveMem(mat, i + 1, j + 1, dp, maxi);
+    int down = solveMem(mat, i + 1, j, dp, maxi);
+
+    if (mat[i][j] == '1') {
+        dp[i][j] = 1 + min(right, min(diagonal, down));
+        maxi = max(maxi, dp[i][j]);
+        return dp[i][j];
+    }
+
+    return dp[i][j] = 0;
+}
+
+//------------------------------------------------------
+// Approach 3 : Tabulation
+//------------------------------------------------------
+
+int solveTab(vector<vector<char>>& mat) {
+
+    int row = mat.size();
+    int col = mat[0].size();
+
+    vector<vector<int>> dp(row + 1, vector<int>(col + 1, 0));
+
+    int maxi = 0;
+
+    for (int i = row - 1; i >= 0; i--) {
+
+        for (int j = col - 1; j >= 0; j--) {
+
+            if (mat[i][j] == '1') {
+
+                dp[i][j] = 1 + min(dp[i][j + 1],
+                               min(dp[i + 1][j],
+                                   dp[i + 1][j + 1]));
+
+                maxi = max(maxi, dp[i][j]);
+            }
+        }
+    }
+
+    return maxi * maxi;
+}
+
+//------------------------------------------------------
+// Approach 4 : Space Optimized DP
+//------------------------------------------------------
+
+int solveSO(vector<vector<char>>& mat) {
+
+    int row = mat.size();
+    int col = mat[0].size();
+
+    vector<int> curr(col + 1, 0);
+    vector<int> next(col + 1, 0);
+
+    int maxi = 0;
+
+    for (int i = row - 1; i >= 0; i--) {
+
+        for (int j = col - 1; j >= 0; j--) {
+
+            if (mat[i][j] == '1') {
+
+                curr[j] = 1 + min(curr[j + 1],
+                              min(next[j],
+                                  next[j + 1]));
+
+                maxi = max(maxi, curr[j]);
+            }
+
+            else
+                curr[j] = 0;
+        }
+
+        next = curr;
+    }
+
+    return maxi * maxi;
+}
+
+//------------------------------------------------------
+
+int main() {
+
+    vector<vector<char>> matrix = {
+        {'1','0','1','0','0'},
+        {'1','0','1','1','1'},
+        {'1','1','1','1','1'},
+        {'1','0','0','1','0'}
+    };
+
+    int maxi = 0;
+    solveRec(matrix, 0, 0, maxi);
+    cout << "Recursion : " << maxi * maxi << endl;
+
+    vector<vector<int>> dp(matrix.size(),
+                           vector<int>(matrix[0].size(), -1));
+
+    maxi = 0;
+    solveMem(matrix, 0, 0, dp, maxi);
+    cout << "Memoization : " << maxi * maxi << endl;
+
+    cout << "Tabulation : " << solveTab(matrix) << endl;
+
+    cout << "Space Optimized : " << solveSO(matrix) << endl;
+
+    return 0;
+}
