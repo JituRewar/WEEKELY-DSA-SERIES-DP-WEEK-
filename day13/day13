@@ -1,0 +1,186 @@
+# Day 13 - Minimum Sideway Jumps (Dynamic Programming)
+
+This repository contains solutions to the LeetCode problem:
+
+## Problem
+**1824. Minimum Sideway Jumps**
+
+A frog starts on lane 2 at point 0 and wants to reach point n while avoiding obstacles.
+
+The objective is to find the minimum number of side jumps required.
+
+---
+
+## Approaches Covered
+
+### 1. Recursive Solution
+- Pure recursion
+- Exponential Time Complexity
+
+### 2. Memoization (Top-Down DP)
+- Stores computed states
+- Time Complexity: O(N × 3)
+
+### 3. Tabulation (Bottom-Up DP)
+- Iterative DP
+- Time Complexity: O(N × 3)
+
+### 4. Space Optimized DP
+- Uses only two arrays
+- Time Complexity: O(N × 3)
+- Space Complexity: O(3)
+
+---
+
+## Complexity
+
+| Approach | Time | Space |
+|----------|------|-------|
+| Recursion | Exponential | O(N) |
+| Memoization | O(N) | O(N) |
+| Tabulation | O(N) | O(N) |
+| Space Optimized | O(N) | O(1) |
+
+---
+
+## Problem Link
+
+https://leetcode.com/problems/minimum-sideway-jumps/
+
+---
+
+⭐ If you found this helpful, consider starring the repository.
+recursion.cpp
+class Solution {
+public:
+    int solve(vector<int>& obs, int lane, int pos) {
+        int n = obs.size() - 1;
+
+        if (pos == n)
+            return 0;
+
+        if (obs[pos + 1] != lane)
+            return solve(obs, lane, pos + 1);
+
+        int ans = INT_MAX;
+
+        for (int i = 1; i <= 3; i++) {
+            if (i != lane && obs[pos] != i)
+                ans = min(ans, 1 + solve(obs, i, pos));
+        }
+
+        return ans;
+    }
+
+    int minSideJumps(vector<int>& obstacles) {
+        return solve(obstacles, 2, 0);
+    }
+};
+memoization.cpp
+class Solution {
+public:
+    int solve(vector<int>& obs, int lane, int pos, vector<vector<int>>& dp) {
+        int n = obs.size() - 1;
+
+        if (pos == n)
+            return 0;
+
+        if (dp[lane][pos] != -1)
+            return dp[lane][pos];
+
+        if (obs[pos + 1] != lane)
+            return dp[lane][pos] = solve(obs, lane, pos + 1, dp);
+
+        int ans = INT_MAX;
+
+        for (int i = 1; i <= 3; i++) {
+            if (i != lane && obs[pos] != i)
+                ans = min(ans, 1 + solve(obs, i, pos, dp));
+        }
+
+        return dp[lane][pos] = ans;
+    }
+
+    int minSideJumps(vector<int>& obstacles) {
+        int n = obstacles.size();
+
+        vector<vector<int>> dp(4, vector<int>(n, -1));
+
+        return solve(obstacles, 2, 0, dp);
+    }
+};
+tabulation.cpp
+class Solution {
+public:
+    int minSideJumps(vector<int>& obstacles) {
+        int n = obstacles.size() - 1;
+
+        vector<vector<int>> dp(4, vector<int>(n + 1, INT_MAX));
+
+        for (int lane = 1; lane <= 3; lane++)
+            dp[lane][n] = 0;
+
+        for (int pos = n - 1; pos >= 0; pos--) {
+            for (int lane = 1; lane <= 3; lane++) {
+
+                if (obstacles[pos + 1] != lane)
+                    dp[lane][pos] = dp[lane][pos + 1];
+                else {
+                    int ans = INT_MAX;
+
+                    for (int i = 1; i <= 3; i++) {
+                        if (i != lane && obstacles[pos] != i)
+                            ans = min(ans, 1 + dp[i][pos + 1]);
+                    }
+
+                    dp[lane][pos] = ans;
+                }
+            }
+        }
+
+        return min({
+            dp[2][0],
+            1 + dp[1][0],
+            1 + dp[3][0]
+        });
+    }
+};
+space_optimization.cpp
+class Solution {
+public:
+    int minSideJumps(vector<int>& obstacles) {
+
+        int n = obstacles.size() - 1;
+
+        vector<int> next(4, 0);
+        vector<int> curr(4, 0);
+
+        for (int pos = n - 1; pos >= 0; pos--) {
+
+            for (int lane = 1; lane <= 3; lane++) {
+
+                if (obstacles[pos + 1] != lane)
+                    curr[lane] = next[lane];
+                else {
+
+                    int ans = INT_MAX;
+
+                    for (int i = 1; i <= 3; i++) {
+                        if (i != lane && obstacles[pos] != i)
+                            ans = min(ans, 1 + next[i]);
+                    }
+
+                    curr[lane] = ans;
+                }
+            }
+
+            next = curr;
+        }
+
+        return min({
+            next[2],
+            1 + next[1],
+            1 + next[3]
+        });
+    }
+};
