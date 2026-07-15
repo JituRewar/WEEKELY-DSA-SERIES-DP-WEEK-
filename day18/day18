@@ -1,0 +1,197 @@
+# Day 18 - Number of Dice Rolls With Target Sum (Dynamic Programming)
+
+## Problem
+
+**LeetCode 1155 - Number of Dice Rolls With Target Sum**
+
+You have `n` dice, and each die has `k` faces numbered from `1` to `k`.
+
+Return the number of possible ways to roll the dice so that the total sum equals the target.
+
+Since the answer may be very large, return it modulo **10⁹ + 7**.
+
+---
+
+## Approaches Covered
+
+1. Recursion
+2. Memoization
+3. Tabulation
+4. Space Optimization
+
+---
+
+## Algorithm
+
+At every die, try all possible face values from **1 to k**.
+
+State:
+
+- Remaining dice
+- Remaining target
+
+Transition:
+
+- Choose one face value and solve for the remaining dice and target.
+
+---
+
+## Complexity
+
+| Approach | Time | Space |
+|----------|------|-------|
+| Recursion | O(kⁿ) | O(n) |
+| Memoization | O(n × target × k) | O(n × target) |
+| Tabulation | O(n × target × k) | O(n × target) |
+| Space Optimized | O(n × target × k) | O(target) |
+
+---
+
+## Problem Link
+
+https://leetcode.com/problems/number-of-dice-rolls-with-target-sum/
+
+⭐ If you found this repository helpful, consider starring it.
+recursion.cpp
+class Solution {
+public:
+
+    const int MOD = 1e9 + 7;
+
+    int solve(int dice, int faces, int target){
+
+        if(target < 0)
+            return 0;
+
+        if(dice == 0 && target == 0)
+            return 1;
+
+        if(dice == 0 || target == 0)
+            return 0;
+
+        int ans = 0;
+
+        for(int i = 1; i <= faces; i++){
+
+            ans = (ans + solve(dice - 1, faces, target - i)) % MOD;
+        }
+
+        return ans;
+    }
+
+    int numRollsToTarget(int n, int k, int target) {
+
+        return solve(n, k, target);
+    }
+};
+memoization.cpp
+class Solution {
+public:
+
+    const int MOD = 1e9 + 7;
+
+    int solve(int dice, int faces, int target,
+              vector<vector<int>>& dp){
+
+        if(target < 0)
+            return 0;
+
+        if(dice == 0 && target == 0)
+            return 1;
+
+        if(dice == 0 || target == 0)
+            return 0;
+
+        if(dp[dice][target] != -1)
+            return dp[dice][target];
+
+        long long ans = 0;
+
+        for(int i = 1; i <= faces; i++){
+
+            ans = (ans + solve(dice - 1, faces, target - i, dp)) % MOD;
+        }
+
+        return dp[dice][target] = ans;
+    }
+
+    int numRollsToTarget(int n, int k, int target) {
+
+        vector<vector<int>> dp(n + 1,
+                               vector<int>(target + 1, -1));
+
+        return solve(n, k, target, dp);
+    }
+};
+tabulation.cpp
+class Solution {
+public:
+
+    const int MOD = 1e9 + 7;
+
+    int numRollsToTarget(int n, int k, int target) {
+
+        vector<vector<int>> dp(n + 1,
+                               vector<int>(target + 1, 0));
+
+        dp[0][0] = 1;
+
+        for(int dice = 1; dice <= n; dice++){
+
+            for(int t = 1; t <= target; t++){
+
+                long long ans = 0;
+
+                for(int face = 1; face <= k; face++){
+
+                    if(t - face >= 0){
+
+                        ans = (ans + dp[dice - 1][t - face]) % MOD;
+                    }
+                }
+
+                dp[dice][t] = ans;
+            }
+        }
+
+        return dp[n][target];
+    }
+};
+space_optimization.cpp
+class Solution {
+public:
+
+    const int MOD = 1e9 + 7;
+
+    int numRollsToTarget(int n, int k, int target) {
+
+        vector<int> prev(target + 1, 0);
+        vector<int> curr(target + 1, 0);
+
+        prev[0] = 1;
+
+        for(int dice = 1; dice <= n; dice++){
+
+            fill(curr.begin(), curr.end(), 0);
+
+            for(int t = 1; t <= target; t++){
+
+                long long ans = 0;
+
+                for(int face = 1; face <= k; face++){
+
+                    if(t - face >= 0){
+
+                        ans = (ans + prev[t - face]) % MOD;
+                    }
+                }
+
+                curr[t] = ans;
+            }
+
+            prev = curr;
+        }
+
+        return prev[target];
+    }
+};
