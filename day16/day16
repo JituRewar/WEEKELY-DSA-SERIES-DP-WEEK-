@@ -1,0 +1,210 @@
+ Day 16 - Maximum Height by Stacking Cuboids (Dynamic Programming)
+
+## Problem
+
+**LeetCode 1691 - Maximum Height by Stacking Cuboids**
+
+You are given n cuboids, where each cuboid has dimensions width, length, and height.
+
+You may rotate each cuboid so that its dimensions are reordered. A cuboid can be placed on top of another only if all three of its dimensions are less than or equal to the corresponding dimensions of the cuboid below it.
+
+Return the maximum height by stacking cuboids.
+
+---
+
+## Approaches Covered
+
+1. Recursion
+2. Memoization
+3. Tabulation
+4. Space Optimization
+
+---
+
+## Algorithm
+
+1. Sort dimensions inside every cuboid.
+2. Sort all cuboids.
+3. Apply Longest Increasing Subsequence (LIS) style DP.
+
+---
+
+## Complexity
+
+| Approach | Time | Space |
+|----------|------|-------|
+| Recursion | O(2ⁿ) | O(n) |
+| Memoization | O(n²) | O(n²) |
+| Tabulation | O(n²) | O(n²) |
+| Space Optimized | O(n²) | O(n) |
+
+---
+
+## Problem Link
+
+https://leetcode.com/problems/maximum-height-by-stacking-cuboids/
+
+⭐ If you found this helpful, consider starring the repository.
+recursion.cpp
+class Solution {
+public:
+
+    bool check(vector<int>& base, vector<int>& curr){
+
+        return curr[0] <= base[0] &&
+               curr[1] <= base[1] &&
+               curr[2] <= base[2];
+    }
+
+    int solve(vector<vector<int>>& cuboids,int curr,int prev){
+
+        if(curr==cuboids.size())
+            return 0;
+
+        int include=0;
+
+        if(prev==-1 || check(cuboids[curr],cuboids[prev]))
+            include=cuboids[curr][2]+solve(cuboids,curr+1,curr);
+
+        int exclude=solve(cuboids,curr+1,prev);
+
+        return max(include,exclude);
+    }
+
+    int maxHeight(vector<vector<int>>& cuboids) {
+
+        for(auto &x:cuboids)
+            sort(x.begin(),x.end());
+
+        sort(cuboids.begin(),cuboids.end());
+
+        return solve(cuboids,0,-1);
+    }
+};
+memoization.cpp
+class Solution {
+public:
+
+    bool check(vector<int>& base, vector<int>& curr){
+
+        return curr[0] <= base[0] &&
+               curr[1] <= base[1] &&
+               curr[2] <= base[2];
+    }
+
+    int solve(vector<vector<int>>& cuboids,int curr,int prev,
+              vector<vector<int>>& dp){
+
+        if(curr==cuboids.size())
+            return 0;
+
+        if(dp[curr][prev+1]!=-1)
+            return dp[curr][prev+1];
+
+        int include=0;
+
+        if(prev==-1 || check(cuboids[curr],cuboids[prev]))
+            include=cuboids[curr][2]+solve(cuboids,curr+1,curr,dp);
+
+        int exclude=solve(cuboids,curr+1,prev,dp);
+
+        return dp[curr][prev+1]=max(include,exclude);
+    }
+
+    int maxHeight(vector<vector<int>>& cuboids) {
+
+        for(auto &x:cuboids)
+            sort(x.begin(),x.end());
+
+        sort(cuboids.begin(),cuboids.end());
+
+        int n=cuboids.size();
+
+        vector<vector<int>> dp(n,vector<int>(n+1,-1));
+
+        return solve(cuboids,0,-1,dp);
+    }
+};
+tabulation.cpp
+class Solution {
+public:
+
+    bool check(vector<int>& base, vector<int>& curr){
+
+        return curr[0] <= base[0] &&
+               curr[1] <= base[1] &&
+               curr[2] <= base[2];
+    }
+
+    int maxHeight(vector<vector<int>>& cuboids) {
+
+        for(auto &x:cuboids)
+            sort(x.begin(),x.end());
+
+        sort(cuboids.begin(),cuboids.end());
+
+        int n=cuboids.size();
+
+        vector<vector<int>> dp(n+1,vector<int>(n+1,0));
+
+        for(int curr=n-1;curr>=0;curr--){
+
+            for(int prev=curr-1;prev>=-1;prev--){
+
+                int include=0;
+
+                if(prev==-1 || check(cuboids[curr],cuboids[prev]))
+                    include=cuboids[curr][2]+dp[curr+1][curr+1];
+
+                int exclude=dp[curr+1][prev+1];
+
+                dp[curr][prev+1]=max(include,exclude);
+            }
+        }
+
+        return dp[0][0];
+    }
+};
+space_optimization.cpp
+class Solution {
+public:
+
+    bool check(vector<int>& base, vector<int>& curr){
+
+        return curr[0] <= base[0] &&
+               curr[1] <= base[1] &&
+               curr[2] <= base[2];
+    }
+
+    int maxHeight(vector<vector<int>>& cuboids) {
+
+        for(auto &x:cuboids)
+            sort(x.begin(),x.end());
+
+        sort(cuboids.begin(),cuboids.end());
+
+        int n=cuboids.size();
+
+        vector<int> next(n+1,0);
+        vector<int> currRow(n+1,0);
+
+        for(int curr=n-1;curr>=0;curr--){
+
+            for(int prev=curr-1;prev>=-1;prev--){
+
+                int include=0;
+
+                if(prev==-1 || check(cuboids[curr],cuboids[prev]))
+                    include=cuboids[curr][2]+next[curr+1];
+
+                int exclude=next[prev+1];
+
+                currRow[prev+1]=max(include,exclude);
+            }
+
+            next=currRow;
+        }
+
+        return next[0];
+    }
+};
