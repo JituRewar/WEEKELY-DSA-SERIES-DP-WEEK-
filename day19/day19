@@ -1,0 +1,190 @@
+# Day 19 - Partition Equal Subset Sum (Dynamic Programming)
+
+## Problem
+
+**LeetCode 416 - Partition Equal Subset Sum**
+
+Given an integer array `nums`, determine if it can be partitioned into two subsets such that the sum of elements in both subsets is equal.
+
+---
+
+## Approaches Covered
+
+1. Recursion
+2. Memoization
+3. Tabulation
+4. Space Optimization
+
+---
+
+## Algorithm
+
+1. Compute the total sum of the array.
+2. If the total sum is odd, return `false`.
+3. Otherwise, the problem reduces to checking whether a subset with sum `totalSum / 2` exists.
+4. Solve it using the classic Subset Sum DP.
+
+---
+
+## Complexity
+
+| Approach | Time | Space |
+|----------|------|-------|
+| Recursion | O(2ⁿ) | O(n) |
+| Memoization | O(n × target) | O(n × target) |
+| Tabulation | O(n × target) | O(n × target) |
+| Space Optimized | O(n × target) | O(target) |
+
+---
+
+## Problem Link
+
+https://leetcode.com/problems/partition-equal-subset-sum/
+
+⭐ If you found this repository helpful, consider starring it.
+recursion.cpp
+class Solution {
+public:
+
+    bool solve(vector<int>& nums, int index, int target){
+
+        if(target == 0)
+            return true;
+
+        if(index >= nums.size() || target < 0)
+            return false;
+
+        bool include = solve(nums, index + 1, target - nums[index]);
+
+        bool exclude = solve(nums, index + 1, target);
+
+        return include || exclude;
+    }
+
+    bool canPartition(vector<int>& nums) {
+
+        int sum = accumulate(nums.begin(), nums.end(), 0);
+
+        if(sum & 1)
+            return false;
+
+        return solve(nums, 0, sum / 2);
+    }
+};
+memoization.cpp
+class Solution {
+public:
+
+    bool solve(vector<int>& nums, int index, int target,
+               vector<vector<int>>& dp){
+
+        if(target == 0)
+            return true;
+
+        if(index >= nums.size() || target < 0)
+            return false;
+
+        if(dp[index][target] != -1)
+            return dp[index][target];
+
+        bool include = solve(nums, index + 1, target - nums[index], dp);
+
+        bool exclude = solve(nums, index + 1, target, dp);
+
+        return dp[index][target] = include || exclude;
+    }
+
+    bool canPartition(vector<int>& nums) {
+
+        int sum = accumulate(nums.begin(), nums.end(), 0);
+
+        if(sum & 1)
+            return false;
+
+        int target = sum / 2;
+
+        vector<vector<int>> dp(nums.size(),
+                               vector<int>(target + 1, -1));
+
+        return solve(nums, 0, target, dp);
+    }
+};
+tabulation.cpp
+class Solution {
+public:
+
+    bool canPartition(vector<int>& nums) {
+
+        int sum = accumulate(nums.begin(), nums.end(), 0);
+
+        if(sum & 1)
+            return false;
+
+        int target = sum / 2;
+        int n = nums.size();
+
+        vector<vector<bool>> dp(n + 1,
+                                vector<bool>(target + 1, false));
+
+        for(int i = 0; i <= n; i++)
+            dp[i][0] = true;
+
+        for(int index = n - 1; index >= 0; index--){
+
+            for(int t = 1; t <= target; t++){
+
+                bool include = false;
+
+                if(t >= nums[index])
+                    include = dp[index + 1][t - nums[index]];
+
+                bool exclude = dp[index + 1][t];
+
+                dp[index][t] = include || exclude;
+            }
+        }
+
+        return dp[0][target];
+    }
+};
+space_optimization.cpp
+class Solution {
+public:
+
+    bool canPartition(vector<int>& nums) {
+
+        int sum = accumulate(nums.begin(), nums.end(), 0);
+
+        if(sum & 1)
+            return false;
+
+        int target = sum / 2;
+        int n = nums.size();
+
+        vector<bool> next(target + 1, false);
+        vector<bool> curr(target + 1, false);
+
+        next[0] = true;
+
+        for(int index = n - 1; index >= 0; index--){
+
+            curr[0] = true;
+
+            for(int t = 1; t <= target; t++){
+
+                bool include = false;
+
+                if(t >= nums[index])
+                    include = next[t - nums[index]];
+
+                bool exclude = next[t];
+
+                curr[t] = include || exclude;
+            }
+
+            next = curr;
+        }
+
+        return next[target];
+    }
+};
