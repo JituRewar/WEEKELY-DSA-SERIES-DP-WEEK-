@@ -1,0 +1,205 @@
+ Day 17 - Pizza With 3N Slices (Dynamic Programming)
+
+## Problem
+
+**LeetCode 1388 - Pizza With 3N Slices**
+
+There is a circular pizza divided into `3n` slices, where each slice has a size represented by an integer array `slices`.
+
+You and your two friends take turns choosing slices:
+- You pick any slice.
+- Alice picks the slice anticlockwise adjacent to yours.
+- Bob picks the slice clockwise adjacent to yours.
+
+This process continues until all slices are taken.
+
+Return the maximum possible sum of the slices you can obtain.
+
+---
+
+## Approaches Covered
+
+1. Recursion
+2. Memoization
+3. Tabulation
+4. Space Optimization
+
+---
+
+## Algorithm
+
+Since the pizza is circular, we cannot take both the first and the last slice.
+
+So we solve two linear DP problems:
+
+1. Include first slice → Exclude last slice
+2. Exclude first slice → Include last slice
+
+The final answer is the maximum of both cases.
+
+---
+
+## Complexity
+
+| Approach | Time | Space |
+|----------|------|-------|
+| Recursion | O(2ⁿ) | O(n) |
+| Memoization | O(n²) | O(n²) |
+| Tabulation | O(n²) | O(n²) |
+| Space Optimized | O(n²) | O(n) |
+
+---
+
+## Problem Link
+
+https://leetcode.com/problems/pizza-with-3n-slices/
+
+⭐ If you found this repository helpful, consider starring it.
+recursion.cpp
+class Solution {
+public:
+
+    int solve(vector<int>& slices,int index,int end,int n){
+
+        if(n==0 || index>end)
+            return 0;
+
+        int include=slices[index]+solve(slices,index+2,end,n-1);
+
+        int exclude=solve(slices,index+1,end,n);
+
+        return max(include,exclude);
+    }
+
+    int maxSizeSlices(vector<int>& slices) {
+
+        int k=slices.size()/3;
+
+        int case1=solve(slices,0,slices.size()-2,k);
+
+        int case2=solve(slices,1,slices.size()-1,k);
+
+        return max(case1,case2);
+    }
+};
+memoization.cpp
+class Solution {
+public:
+
+    int solve(vector<int>& slices,int index,int end,int n,
+              vector<vector<int>>& dp){
+
+        if(n==0 || index>end)
+            return 0;
+
+        if(dp[index][n]!=-1)
+            return dp[index][n];
+
+        int include=slices[index]+
+                    solve(slices,index+2,end,n-1,dp);
+
+        int exclude=solve(slices,index+1,end,n,dp);
+
+        return dp[index][n]=max(include,exclude);
+    }
+
+    int maxSizeSlices(vector<int>& slices) {
+
+        int m=slices.size();
+        int k=m/3;
+
+        vector<vector<int>> dp1(m,vector<int>(k+1,-1));
+        vector<vector<int>> dp2(m,vector<int>(k+1,-1));
+
+        int case1=solve(slices,0,m-2,k,dp1);
+
+        int case2=solve(slices,1,m-1,k,dp2);
+
+        return max(case1,case2);
+    }
+};
+tabulation.cpp
+class Solution {
+public:
+
+    int maxSizeSlices(vector<int>& slices) {
+
+        int k=slices.size()/3;
+        int m=slices.size();
+
+        vector<vector<int>> dp1(m+2,vector<int>(k+1,0));
+        vector<vector<int>> dp2(m+2,vector<int>(k+1,0));
+
+        for(int index=m-2;index>=0;index--){
+
+            for(int n=1;n<=k;n++){
+
+                int include=slices[index]+dp1[index+2][n-1];
+
+                int exclude=dp1[index+1][n];
+
+                dp1[index][n]=max(include,exclude);
+            }
+        }
+
+        for(int index=m-1;index>=1;index--){
+
+            for(int n=1;n<=k;n++){
+
+                int include=slices[index]+dp2[index+2][n-1];
+
+                int exclude=dp2[index+1][n];
+
+                dp2[index][n]=max(include,exclude);
+            }
+        }
+
+        return max(dp1[0][k],dp2[1][k]);
+    }
+};
+space_optimization.cpp
+class Solution {
+public:
+
+    int maxSizeSlices(vector<int>& slices) {
+
+        int k=slices.size()/3;
+        int m=slices.size();
+
+        vector<int> prev1(k+1,0),curr1(k+1,0),next1(k+1,0);
+
+        for(int index=m-2;index>=0;index--){
+
+            for(int n=1;n<=k;n++){
+
+                int include=slices[index]+next1[n-1];
+
+                int exclude=curr1[n];
+
+                prev1[n]=max(include,exclude);
+            }
+
+            next1=curr1;
+            curr1=prev1;
+        }
+
+        vector<int> prev2(k+1,0),curr2(k+1,0),next2(k+1,0);
+
+        for(int index=m-1;index>=1;index--){
+
+            for(int n=1;n<=k;n++){
+
+                int include=slices[index]+next2[n-1];
+
+                int exclude=curr2[n];
+
+                prev2[n]=max(include,exclude);
+            }
+
+            next2=curr2;
+            curr2=prev2;
+        }
+
+        return max(curr1[k],curr2[k]);
+    }
+};
