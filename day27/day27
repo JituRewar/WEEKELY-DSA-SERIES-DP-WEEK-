@@ -1,0 +1,183 @@
+# Day 27 - Best Time to Buy and Sell Stock II (Dynamic Programming)
+
+## Problem
+
+**LeetCode 122 - Best Time to Buy and Sell Stock II**
+
+You are given an integer array `prices`, where `prices[i]` is the price of a stock on the `i-th` day.
+
+You may complete as many transactions as you like (buy one and sell one share of the stock multiple times).
+
+**Note:** You cannot hold more than one stock at a time. You must sell before buying again.
+
+Return the maximum profit you can achieve.
+
+---
+
+## Approaches Covered
+
+1. Recursion
+2. Memoization
+3. Tabulation
+4. Space Optimization
+
+---
+
+## Algorithm
+
+Maintain two DP states:
+
+- **buy = 1** → You are allowed to buy.
+- **buy = 0** → You currently own a stock and can sell.
+
+At every index:
+
+If buying:
+
+profit = max(
+-buy today + solve(next, sell),
+skip today
+)
+
+If selling:
+
+profit = max(
+sell today + solve(next, buy),
+skip today
+)
+
+---
+
+## Complexity
+
+| Approach | Time | Space |
+|----------|------|-------|
+| Recursion | O(2ⁿ) | O(n) |
+| Memoization | O(n) | O(n) |
+| Tabulation | O(n) | O(n) |
+| Space Optimization | O(n) | O(1) |
+
+---
+
+## Problem Link
+
+https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/
+
+⭐ If you found this repository helpful, consider starring it.
+recursion.cpp
+class Solution {
+public:
+
+    int solve(vector<int>& prices,int index,bool buy){
+
+        if(index==prices.size())
+            return 0;
+
+        if(buy){
+
+            return max(
+                -prices[index]+solve(prices,index+1,false),
+                solve(prices,index+1,true)
+            );
+        }
+
+        return max(
+            prices[index]+solve(prices,index+1,true),
+            solve(prices,index+1,false)
+        );
+    }
+
+    int maxProfit(vector<int>& prices) {
+
+        return solve(prices,0,true);
+    }
+};
+memoization.cpp
+class Solution {
+public:
+
+    int solve(vector<int>& prices,int index,bool buy,
+              vector<vector<int>>& dp){
+
+        if(index==prices.size())
+            return 0;
+
+        if(dp[index][buy]!=-1)
+            return dp[index][buy];
+
+        if(buy){
+
+            return dp[index][buy]=max(
+                -prices[index]+solve(prices,index+1,false,dp),
+                solve(prices,index+1,true,dp)
+            );
+        }
+
+        return dp[index][buy]=max(
+            prices[index]+solve(prices,index+1,true,dp),
+            solve(prices,index+1,false,dp)
+        );
+    }
+
+    int maxProfit(vector<int>& prices) {
+
+        int n=prices.size();
+
+        vector<vector<int>> dp(n,vector<int>(2,-1));
+
+        return solve(prices,0,true,dp);
+    }
+};
+tabulation.cpp
+class Solution {
+public:
+
+    int maxProfit(vector<int>& prices) {
+
+        int n=prices.size();
+
+        vector<vector<int>> dp(n+1,vector<int>(2,0));
+
+        for(int index=n-1;index>=0;index--){
+
+            dp[index][1]=max(
+                -prices[index]+dp[index+1][0],
+                dp[index+1][1]
+            );
+
+            dp[index][0]=max(
+                prices[index]+dp[index+1][1],
+                dp[index+1][0]
+            );
+        }
+
+        return dp[0][1];
+    }
+};
+space_optimization.cpp
+class Solution {
+public:
+
+    int maxProfit(vector<int>& prices) {
+
+        vector<int> next(2,0);
+        vector<int> curr(2,0);
+
+        for(int index=prices.size()-1;index>=0;index--){
+
+            curr[1]=max(
+                -prices[index]+next[0],
+                next[1]
+            );
+
+            curr[0]=max(
+                prices[index]+next[1],
+                next[0]
+            );
+
+            next=curr;
+        }
+
+        return next[1];
+    }
+};
