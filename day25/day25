@@ -1,0 +1,189 @@
+# Day 25 - Minimum Cost Tree From Leaf Values (Dynamic Programming)
+
+## Problem
+
+**LeetCode 1130 - Minimum Cost Tree From Leaf Values**
+
+Given an array `arr` of positive integers, consider all binary trees such that:
+
+- Each node has either 0 or 2 children.
+- The values of the leaves are the values in `arr` in the same order.
+- Each non-leaf node's value is the product of the largest leaf values in its left and right subtree.
+
+Return the minimum possible sum of the values of all non-leaf nodes.
+
+---
+
+## Approaches Covered
+
+1. Recursion
+2. Memoization
+3. Tabulation
+
+---
+
+## Algorithm
+
+Let:
+
+dp[left][right]
+
+be the minimum cost to construct a tree using the subarray `[left...right]`.
+
+For every possible partition:
+
+cost =
+leftCost
++ rightCost
++ (maximum leaf in left part × maximum leaf in right part)
+
+Take the minimum over all partitions.
+
+---
+
+## Complexity
+
+| Approach | Time | Space |
+|----------|------|-------|
+| Recursion | Exponential | O(n) |
+| Memoization | O(n³) | O(n²) |
+| Tabulation | O(n³) | O(n²) |
+
+---
+
+## Problem Link
+
+https://leetcode.com/problems/minimum-cost-tree-from-leaf-values/
+
+⭐ If you found this repository helpful, consider starring it.
+recursion.cpp
+class Solution {
+public:
+
+    int solve(vector<int>& arr, int left, int right,
+              vector<vector<int>>& maxi){
+
+        if(left == right)
+            return 0;
+
+        int ans = INT_MAX;
+
+        for(int i = left; i < right; i++){
+
+            ans = min(ans,
+                      solve(arr, left, i, maxi) +
+                      solve(arr, i + 1, right, maxi) +
+                      maxi[left][i] * maxi[i + 1][right]);
+        }
+
+        return ans;
+    }
+
+    int mctFromLeafValues(vector<int>& arr) {
+
+        int n = arr.size();
+
+        vector<vector<int>> maxi(n, vector<int>(n));
+
+        for(int i = 0; i < n; i++){
+
+            maxi[i][i] = arr[i];
+
+            for(int j = i + 1; j < n; j++){
+
+                maxi[i][j] = max(maxi[i][j - 1], arr[j]);
+            }
+        }
+
+        return solve(arr, 0, n - 1, maxi);
+    }
+};
+memoization.cpp
+class Solution {
+public:
+
+    int solve(vector<int>& arr, int left, int right,
+              vector<vector<int>>& dp,
+              vector<vector<int>>& maxi){
+
+        if(left == right)
+            return 0;
+
+        if(dp[left][right] != -1)
+            return dp[left][right];
+
+        int ans = INT_MAX;
+
+        for(int i = left; i < right; i++){
+
+            ans = min(ans,
+                      solve(arr, left, i, dp, maxi) +
+                      solve(arr, i + 1, right, dp, maxi) +
+                      maxi[left][i] * maxi[i + 1][right]);
+        }
+
+        return dp[left][right] = ans;
+    }
+
+    int mctFromLeafValues(vector<int>& arr) {
+
+        int n = arr.size();
+
+        vector<vector<int>> dp(n, vector<int>(n, -1));
+        vector<vector<int>> maxi(n, vector<int>(n));
+
+        for(int i = 0; i < n; i++){
+
+            maxi[i][i] = arr[i];
+
+            for(int j = i + 1; j < n; j++){
+
+                maxi[i][j] = max(maxi[i][j - 1], arr[j]);
+            }
+        }
+
+        return solve(arr, 0, n - 1, dp, maxi);
+    }
+};
+tabulation.cpp
+class Solution {
+public:
+
+    int mctFromLeafValues(vector<int>& arr) {
+
+        int n = arr.size();
+
+        vector<vector<int>> dp(n, vector<int>(n, 0));
+        vector<vector<int>> maxi(n, vector<int>(n));
+
+        for(int i = 0; i < n; i++){
+
+            maxi[i][i] = arr[i];
+
+            for(int j = i + 1; j < n; j++){
+
+                maxi[i][j] = max(maxi[i][j - 1], arr[j]);
+            }
+        }
+
+        for(int left = n - 1; left >= 0; left--){
+
+            for(int right = left + 1; right < n; right++){
+
+                dp[left][right] = INT_MAX;
+
+                for(int k = left; k < right; k++){
+
+                    dp[left][right] = min(
+                        dp[left][right],
+                        dp[left][k] +
+                        dp[k + 1][right] +
+                        maxi[left][k] * maxi[k + 1][right]
+                    );
+                }
+            }
+        }
+
+        return dp[0][n - 1];
+    }
+};
