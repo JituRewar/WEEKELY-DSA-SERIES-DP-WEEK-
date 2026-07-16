@@ -1,0 +1,178 @@
+# Day 24 - Guess Number Higher or Lower II (Dynamic Programming)
+
+## Problem
+
+**LeetCode 375 - Guess Number Higher or Lower II**
+
+You need to guess a number between `1` and `n`.
+
+Whenever you guess a number `x`:
+
+- If your guess is wrong, you pay `x` dollars.
+- Then you're told whether the hidden number is higher or lower.
+
+Return the **minimum amount of money** required to guarantee a win.
+
+---
+
+## Approaches Covered
+
+1. Recursion
+2. Memoization
+3. Tabulation
+
+---
+
+## Algorithm
+
+Suppose we guess a number `k`.
+
+There are two possible cases:
+
+- Hidden number is smaller → solve(left interval)
+- Hidden number is larger → solve(right interval)
+
+Since we must guarantee a win, we consider the worst case.
+
+Transition:
+
+cost = k + max(leftCost, rightCost)
+
+Try every possible pivot and choose the minimum.
+
+---
+
+## Complexity
+
+| Approach | Time | Space |
+|----------|------|-------|
+| Recursion | Exponential | O(n) |
+| Memoization | O(n³) | O(n²) |
+| Tabulation | O(n³) | O(n²) |
+
+---
+
+## Problem Link
+
+https://leetcode.com/problems/guess-number-higher-or-lower-ii/
+
+⭐ If you found this repository helpful, consider starring it.
+recursion.cpp
+class Solution {
+public:
+
+    int solve(int start,int end){
+
+        if(start>=end)
+            return 0;
+
+        int ans=INT_MAX;
+
+        for(int i=start;i<=end;i++){
+
+            int cost=i+max(
+                solve(start,i-1),
+                solve(i+1,end)
+            );
+
+            ans=min(ans,cost);
+        }
+
+        return ans;
+    }
+
+    int getMoneyAmount(int n) {
+
+        return solve(1,n);
+    }
+};
+memoization.cpp
+class Solution {
+public:
+
+    int solve(int start,int end,vector<vector<int>>& dp){
+
+        if(start>=end)
+            return 0;
+
+        if(dp[start][end]!=-1)
+            return dp[start][end];
+
+        int ans=INT_MAX;
+
+        for(int i=start;i<=end;i++){
+
+            int cost=i+max(
+                solve(start,i-1,dp),
+                solve(i+1,end,dp)
+            );
+
+            ans=min(ans,cost);
+        }
+
+        return dp[start][end]=ans;
+    }
+
+    int getMoneyAmount(int n) {
+
+        vector<vector<int>> dp(n+2,vector<int>(n+2,-1));
+
+        return solve(1,n,dp);
+    }
+};
+tabulation.cpp
+class Solution {
+public:
+
+    int getMoneyAmount(int n) {
+
+        vector<vector<int>> dp(n+2,vector<int>(n+2,0));
+
+        for(int start=n;start>=1;start--){
+
+            for(int end=start+1;end<=n;end++){
+
+                int ans=INT_MAX;
+
+                for(int i=start;i<=end;i++){
+
+                    int cost=i+max(
+                        dp[start][i-1],
+                        dp[i+1][end]
+                    );
+
+                    ans=min(ans,cost);
+                }
+
+                dp[start][end]=ans;
+            }
+        }
+
+        return dp[1][n];
+    }
+};
+Suggested Commit Message
+Add Day 24 solution: Guess Number Higher or Lower II
+
+- Recursive approach
+- Memoization
+- Tabulation DP
+- Added README with explanation and complexity analysis
+📌 Key Learning (Day 24)
+
+This problem introduces the Minimax Dynamic Programming pattern.
+
+The DP state is:
+
+dp[start][end]
+
+which represents the minimum cost required to guarantee a win for the interval [start, end].
+
+For every possible guess k:
+
+cost = k + max(
+    dp[start][k-1],
+    dp[k+1][end]
+)
+We use max() because the hidden number could be in the more expensive interval (worst case).
+We use min() over all possible guesses to minimize our guaranteed cost.
