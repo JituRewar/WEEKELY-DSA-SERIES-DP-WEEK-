@@ -1,0 +1,223 @@
+# Day 30 - Best Time to Buy and Sell Stock with Cooldown (Dynamic Programming)
+
+## Problem
+
+**LeetCode 309 - Best Time to Buy and Sell Stock with Cooldown**
+
+You are given an array `prices` where `prices[i]` is the price of a stock on the `i-th` day.
+
+You may complete as many transactions as you like.
+
+After selling a stock, you **cannot buy on the next day** because there is a **1-day cooldown**.
+
+Return the maximum profit.
+
+---
+
+## Approaches Covered
+
+1. Recursion
+2. Memoization
+3. Tabulation
+4. Space Optimization
+
+---
+
+## Algorithm
+
+Maintain two DP states:
+
+- **buy = 1** → You are allowed to buy.
+- **buy = 0** → You currently own a stock and can sell.
+
+Transitions:
+
+If Buy:
+
+profit = max(
+-buy + solve(next day, sell),
+skip
+)
+
+If Sell:
+
+profit = max(
+sell + solve(after cooldown, buy),
+skip
+)
+
+Notice that after selling, the next state starts from **index + 2** because of the cooldown.
+
+---
+
+## Complexity
+
+| Approach | Time | Space |
+|----------|------|-------|
+| Recursion | O(2ⁿ) | O(n) |
+| Memoization | O(n) | O(n) |
+| Tabulation | O(n) | O(n) |
+| Space Optimization | O(n) | O(1) |
+
+---
+
+## Problem Link
+
+https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/
+
+⭐ If you found this repository helpful, consider starring it.
+recursion.cpp
+class Solution {
+public:
+
+    int solve(vector<int>& prices,int index,bool buy){
+
+        if(index>=prices.size())
+            return 0;
+
+        if(buy){
+
+            return max(
+                -prices[index]+solve(prices,index+1,false),
+                solve(prices,index+1,true)
+            );
+        }
+
+        return max(
+            prices[index]+solve(prices,index+2,true),
+            solve(prices,index+1,false)
+        );
+    }
+
+    int maxProfit(vector<int>& prices) {
+
+        return solve(prices,0,true);
+    }
+};
+memoization.cpp
+class Solution {
+public:
+
+    int solve(vector<int>& prices,int index,bool buy,
+              vector<vector<int>>& dp){
+
+        if(index>=prices.size())
+            return 0;
+
+        if(dp[index][buy]!=-1)
+            return dp[index][buy];
+
+        if(buy){
+
+            return dp[index][buy]=max(
+                -prices[index]+solve(prices,index+1,false,dp),
+                solve(prices,index+1,true,dp)
+            );
+        }
+
+        return dp[index][buy]=max(
+            prices[index]+solve(prices,index+2,true,dp),
+            solve(prices,index+1,false,dp)
+        );
+    }
+
+    int maxProfit(vector<int>& prices) {
+
+        int n=prices.size();
+
+        vector<vector<int>> dp(n,vector<int>(2,-1));
+
+        return solve(prices,0,true,dp);
+    }
+};
+tabulation.cpp
+class Solution {
+public:
+
+    int maxProfit(vector<int>& prices) {
+
+        int n=prices.size();
+
+        vector<vector<int>> dp(n+2,vector<int>(2,0));
+
+        for(int index=n-1;index>=0;index--){
+
+            dp[index][1]=max(
+                -prices[index]+dp[index+1][0],
+                dp[index+1][1]
+            );
+
+            dp[index][0]=max(
+                prices[index]+dp[index+2][1],
+                dp[index+1][0]
+            );
+        }
+
+        return dp[0][1];
+    }
+};
+space_optimization.cpp
+class Solution {
+public:
+
+    int maxProfit(vector<int>& prices) {
+
+        vector<int> next1(2,0);
+        vector<int> next2(2,0);
+        vector<int> curr(2,0);
+
+        for(int index=prices.size()-1;index>=0;index--){
+
+            curr[1]=max(
+                -prices[index]+next1[0],
+                next1[1]
+            );
+
+            curr[0]=max(
+                prices[index]+next2[1],
+                next1[0]
+            );
+
+            next2=next1;
+            next1=curr;
+        }
+
+        return next1[1];
+    }
+};
+Suggested Commit Message
+Add Day 30 solution: Best Time to Buy and Sell Stock with Cooldown
+
+- Recursive approach
+- Memoization
+- Tabulation DP
+- Space Optimized DP
+- Added README with explanation and complexity analysis
+📌 Key Learning (Day 30)
+
+This problem extends the Stock DP pattern by introducing a cooldown period after every sale.
+
+The DP state remains:
+
+dp[index][buy]
+
+where:
+
+index → Current day
+buy → 1 if you can buy, 0 if you currently hold a stock
+
+The key difference is in the sell transition:
+
+Buy:
+max(
+-price + nextSell,
+skip
+)
+
+Sell:
+max(
+price + dp[index+2][buy],
+skip
+)
+
+After selling, you must skip the next day, so the next valid buying state starts at index + 2.
