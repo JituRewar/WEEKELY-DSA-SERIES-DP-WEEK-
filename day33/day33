@@ -1,0 +1,226 @@
+# Day 33 - Edit Distance (Dynamic Programming)
+
+## Problem
+
+**LeetCode 72 - Edit Distance**
+
+Given two strings `word1` and `word2`, return the minimum number of operations required to convert `word1` into `word2`.
+
+You have the following three operations:
+
+- Insert a character
+- Delete a character
+- Replace a character
+
+---
+
+## Approaches Covered
+
+1. Recursion
+2. Memoization
+3. Tabulation
+4. Space Optimization
+
+---
+
+## Algorithm
+
+Let:
+
+dp[i][j]
+
+represent the minimum operations required to convert the substring `word1[i...]` into `word2[j...]`.
+
+### Case 1
+
+If characters match:
+
+EditDistance(i,j) = EditDistance(i+1,j+1)
+
+### Case 2
+
+Otherwise perform one operation:
+
+- Insert
+- Delete
+- Replace
+
+Transition:
+
+1 + min(
+Insert,
+Delete,
+Replace
+)
+
+---
+
+## Complexity
+
+| Approach | Time | Space |
+|----------|------|-------|
+| Recursion | O(3^(m+n)) | O(m+n) |
+| Memoization | O(m × n) | O(m × n) |
+| Tabulation | O(m × n) | O(m × n) |
+| Space Optimization | O(m × n) | O(n) |
+
+---
+
+## Problem Link
+
+https://leetcode.com/problems/edit-distance/
+
+⭐ If you found this repository helpful, consider starring it.
+recursion.cpp
+class Solution {
+public:
+
+    int solve(string &word1,string &word2,int i,int j){
+
+        if(i==word1.length())
+            return word2.length()-j;
+
+        if(j==word2.length())
+            return word1.length()-i;
+
+        if(word1[i]==word2[j])
+            return solve(word1,word2,i+1,j+1);
+
+        int insertAns=1+solve(word1,word2,i,j+1);
+
+        int deleteAns=1+solve(word1,word2,i+1,j);
+
+        int replaceAns=1+solve(word1,word2,i+1,j+1);
+
+        return min(insertAns,min(deleteAns,replaceAns));
+    }
+
+    int minDistance(string word1, string word2) {
+
+        return solve(word1,word2,0,0);
+    }
+};
+memoization.cpp
+class Solution {
+public:
+
+    int solve(string &word1,string &word2,int i,int j,
+              vector<vector<int>>& dp){
+
+        if(i==word1.length())
+            return word2.length()-j;
+
+        if(j==word2.length())
+            return word1.length()-i;
+
+        if(dp[i][j]!=-1)
+            return dp[i][j];
+
+        if(word1[i]==word2[j]){
+
+            return dp[i][j]=solve(word1,word2,i+1,j+1,dp);
+        }
+
+        int insertAns=1+solve(word1,word2,i,j+1,dp);
+
+        int deleteAns=1+solve(word1,word2,i+1,j,dp);
+
+        int replaceAns=1+solve(word1,word2,i+1,j+1,dp);
+
+        return dp[i][j]=min(insertAns,min(deleteAns,replaceAns));
+    }
+
+    int minDistance(string word1, string word2) {
+
+        int m=word1.length();
+        int n=word2.length();
+
+        vector<vector<int>> dp(m,vector<int>(n,-1));
+
+        return solve(word1,word2,0,0,dp);
+    }
+};
+tabulation.cpp
+class Solution {
+public:
+
+    int minDistance(string word1, string word2) {
+
+        int m=word1.length();
+        int n=word2.length();
+
+        vector<vector<int>> dp(m+1,vector<int>(n+1,0));
+
+        for(int i=0;i<=m;i++)
+            dp[i][n]=m-i;
+
+        for(int j=0;j<=n;j++)
+            dp[m][j]=n-j;
+
+        for(int i=m-1;i>=0;i--){
+
+            for(int j=n-1;j>=0;j--){
+
+                if(word1[i]==word2[j]){
+
+                    dp[i][j]=dp[i+1][j+1];
+                }
+                else{
+
+                    int insertAns=1+dp[i][j+1];
+
+                    int deleteAns=1+dp[i+1][j];
+
+                    int replaceAns=1+dp[i+1][j+1];
+
+                    dp[i][j]=min(insertAns,min(deleteAns,replaceAns));
+                }
+            }
+        }
+
+        return dp[0][0];
+    }
+};
+space_optimization.cpp
+class Solution {
+public:
+
+    int minDistance(string word1, string word2) {
+
+        int m=word1.length();
+        int n=word2.length();
+
+        vector<int> next(n+1,0);
+        vector<int> curr(n+1,0);
+
+        for(int j=0;j<=n;j++)
+            next[j]=n-j;
+
+        for(int i=m-1;i>=0;i--){
+
+            curr[n]=m-i;
+
+            for(int j=n-1;j>=0;j--){
+
+                if(word1[i]==word2[j]){
+
+                    curr[j]=next[j+1];
+                }
+                else{
+
+                    int insertAns=1+curr[j+1];
+
+                    int deleteAns=1+next[j];
+
+                    int replaceAns=1+next[j+1];
+
+                    curr[j]=min(insertAns,min(deleteAns,replaceAns));
+                }
+            }
+
+            next=curr;
+        }
+
+        return next[0];
+    }
+};
