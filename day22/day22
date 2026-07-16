@@ -1,0 +1,141 @@
+# Day 22 - Longest Arithmetic Subsequence of Given Difference (Dynamic Programming)
+
+## Problem
+
+**LeetCode 1218 - Longest Arithmetic Subsequence of Given Difference**
+
+Given an integer array `arr` and an integer `difference`, return the length of the longest subsequence in `arr` such that the difference between adjacent elements equals `difference`.
+
+---
+
+## Approaches Covered
+
+1. Recursion
+2. Memoization
+3. Dynamic Programming (HashMap)
+
+---
+
+## Algorithm
+
+For every element `arr[i]`:
+
+- Find whether `arr[i] - difference` already exists in a subsequence.
+- Extend that subsequence by including `arr[i]`.
+- Store the best answer ending at `arr[i]`.
+
+Transition:
+
+dp[arr[i]] = dp[arr[i] - difference] + 1
+
+---
+
+## Complexity
+
+| Approach | Time | Space |
+|----------|------|-------|
+| Recursion | O(2ⁿ) | O(n) |
+| Memoization | O(n²) | O(n²) |
+| DP (HashMap) | O(n) | O(n) |
+
+---
+
+## Problem Link
+
+https://leetcode.com/problems/longest-arithmetic-subsequence-of-given-difference/
+
+⭐ If you found this repository helpful, consider starring it.
+recursion.cpp
+class Solution {
+public:
+
+    int solve(vector<int>& arr, int index, int diff){
+
+        if(index == arr.size())
+            return 0;
+
+        int take = 0;
+
+        for(int i = index + 1; i < arr.size(); i++){
+
+            if(arr[i] - arr[index] == diff){
+
+                take = max(take, 1 + solve(arr, i, diff));
+            }
+        }
+
+        return take;
+    }
+
+    int longestSubsequence(vector<int>& arr, int difference) {
+
+        int ans = 1;
+
+        for(int i = 0; i < arr.size(); i++){
+
+            ans = max(ans, 1 + solve(arr, i, difference));
+        }
+
+        return ans;
+    }
+};
+memoization.cpp
+class Solution {
+public:
+
+    int solve(vector<int>& arr, int index, int diff,
+              vector<int>& dp){
+
+        if(dp[index] != -1)
+            return dp[index];
+
+        int ans = 1;
+
+        for(int i = index + 1; i < arr.size(); i++){
+
+            if(arr[i] - arr[index] == diff){
+
+                ans = max(ans,
+                          1 + solve(arr, i, diff, dp));
+            }
+        }
+
+        return dp[index] = ans;
+    }
+
+    int longestSubsequence(vector<int>& arr, int difference) {
+
+        int n = arr.size();
+
+        vector<int> dp(n, -1);
+
+        int ans = 1;
+
+        for(int i = 0; i < n; i++){
+
+            ans = max(ans, solve(arr, i, difference, dp));
+        }
+
+        return ans;
+    }
+};
+tabulation.cpp (Optimal)
+class Solution {
+public:
+
+    int longestSubsequence(vector<int>& arr, int difference) {
+
+        unordered_map<int,int> dp;
+
+        int ans = 1;
+
+        for(int num : arr){
+
+            dp[num] = dp[num - difference] + 1;
+
+            ans = max(ans, dp[num]);
+        }
+
+        return ans;
+    }
+};
